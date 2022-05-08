@@ -90,9 +90,9 @@ public class Dao {
 		return asiakkaat;
 	}
 	
-	public boolean lisaaAsiakas(Asiakas asiakas){
+	public boolean lisaaAsiakas(Asiakas asiakas) {
 		boolean paluuArvo=true;
-		sql="INSERT INTO asiakkaat (etunimi, sukunimi, puhelin, sposti) VALUES(?,?,?,?)";						  
+		sql="INSERT INTO asiakkaat(etunimi, sukunimi, puhelin, sposti) VALUES(?,?,?,?)";						  
 		try {
 			con = yhdista();
 			stmtPrep=con.prepareStatement(sql); 
@@ -101,20 +101,22 @@ public class Dao {
 			stmtPrep.setString(3, asiakas.getPuhelin());
 			stmtPrep.setString(4, asiakas.getSposti());
 			stmtPrep.executeUpdate();
+			//System.out.println("Uusin id on " + stmtPrep.getGeneratedKeys().getInt(1));
 	        con.close();
 		} catch (Exception e) {				
 			e.printStackTrace();
 			paluuArvo=false;
 		}				
 		return paluuArvo;
-}
-	public boolean poistaAsiakas(String sposti){ //Oikeassa el‰m‰ss‰ tiedot ensisijaisesti merkit‰‰n poistetuksi.
+	}
+	
+	public boolean poistaAsiakas(int asiakas_id) {
 		boolean paluuArvo=true;
-		sql="DELETE FROM asiakkaat WHERE sposti=?";						  
+		sql="DELETE FROM asiakkaat WHERE asiakas_id=?";						  
 		try {
 			con = yhdista();
 			stmtPrep=con.prepareStatement(sql); 
-			stmtPrep.setString(1, sposti);			
+			stmtPrep.setInt(1, asiakas_id);			
 			stmtPrep.executeUpdate();
 	        con.close();
 		} catch (Exception e) {				
@@ -122,5 +124,52 @@ public class Dao {
 			paluuArvo=false;
 		}				
 		return paluuArvo;
-	}	
+	}
+
+public Asiakas etsiAsiakas(String asiakas_id) {
+	Asiakas asiakas = null;
+	sql = "SELECT * FROM asiakkaat WHERE asiakas_id=?";       
+	try {
+		con=yhdista();
+		if(con!=null){ 
+			stmtPrep = con.prepareStatement(sql); 
+			stmtPrep.setString(1, asiakas_id);
+    		rs = stmtPrep.executeQuery();  
+    		if(rs.isBeforeFirst()){ 
+    			rs.next();
+    			asiakas = new Asiakas();
+    			asiakas.setAsiakas_id(rs.getInt(1));
+    			asiakas.setEtunimi(rs.getString(2));
+				asiakas.setSukunimi(rs.getString(3));
+				asiakas.setPuhelin(rs.getString(4));	
+				asiakas.setSposti(rs.getString(5));
+				
+			}        		
+		}	
+		con.close();  
+	} catch (Exception e) {
+		e.printStackTrace();
+	}		
+	return asiakas;		
+}
+
+public boolean muutaAsiakas(Asiakas asiakas, String vanhaasiakas){
+    boolean paluuArvo=true;
+    sql="UPDATE asiakkaat SET etunimi=?, sukunimi=?, puhelin=?, sposti=? WHERE asiakas_id=?";
+    try {
+        con = yhdista();
+        stmtPrep=con.prepareStatement(sql); 
+        stmtPrep.setString(1, asiakas.getEtunimi());
+        stmtPrep.setString(2, asiakas.getSukunimi());
+        stmtPrep.setString(3, asiakas.getPuhelin());
+        stmtPrep.setString(4, asiakas.getSposti());
+        stmtPrep.setString(5, vanhaasiakas);
+        stmtPrep.executeUpdate();
+        con.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+        paluuArvo=false;
+    }
+    return paluuArvo;
+}
 }
